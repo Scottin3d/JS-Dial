@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]>      <html class="no-js"> <!--<![endif]-->
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="">
+    </head>
+    <body>
+        <canvas id="clockCanvas" width="800" height="800"></canvas>
+        <div id="popup" style="display: none; position: absolute; background-color: #fff; padding: 10px; z-index: 10;"></div>
+        <br>
+
+        <input type="range" id="slider" min="0" max="360" step="1" value="30">
+        <br>
+        <label for="latitudeInput">Latitude:</label>
+        <input type="text" id="latitudeInput" value="15.4046700">
+        <br>
+        <label for="longitudeInput">Longitude:</label>
+        <input type="text" id="longitudeInput" value="-4.4203400">
+        <br>
+
+        <!-- Button to get sunrise-sunset data -->
+        <button id="getSunriseSunsetBtn">Get Sunrise Sunset Data</button>
+
+        <!-- Display the API response -->
+        <pre id="apiResponse"></pre>
+
+        <script src="script.js"></script>
+        
+        <script src="" async defer></script>
+    </body>
+</html>
