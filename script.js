@@ -96,32 +96,38 @@ function radiansToDate(angleInRadians) {
 // Function to calculate the background color based on the current time
 function fillNightBackGround(time) {
 
-    let dawnAngle = timeToDegrees(sunrise);
-    const dawnRadians = (dawnAngle / 180) * Math.PI;
+    // sunrise and sunset
+    let sunriseDegrees = timeToDegrees(sunrise);
+    const sunriseRadians = (sunriseDegrees / 180) * Math.PI;
 
-    let duskAngle = timeToDegrees(sunset);
-    const duskRadians = (duskAngle / 180) * Math.PI;
-    drawColorOnCanvas(duskRadians, dawnRadians, '#5C469C')
+    let sunsetDegrees = timeToDegrees(sunset);
+    const sunsetRadians = (sunsetDegrees / 180) * Math.PI;
+    drawColorOnCanvas(sunsetRadians, sunriseRadians, '#7858A6')
 
-    // offset testdawntime by 30 minutes
-    let dawnOffset = new Date(sunrise.getTime() - 30 * 60000);
-    let dawnOffsetAngle = timeToDegrees(dawnOffset);
-    let dawnOffsetRadians = (dawnOffsetAngle / 180) * Math.PI;
+    // civil twilight
+    let civilTwilightBeginDegrees = timeToDegrees(civilTwilightBegin);
+    const civilTwilightBeginRadians = (civilTwilightBeginDegrees / 180) * Math.PI;
 
-    let duskOffset = new Date(sunset.getTime() + 30 * 60000);
-    let duskOffsetAngle = timeToDegrees(duskOffset);
-    let duskOffsetRadians = (duskOffsetAngle / 180) * Math.PI;
-    drawColorOnCanvas(duskOffsetRadians, dawnOffsetRadians, '#1D267D');
+    let civilTwilightEndDegrees = timeToDegrees(civilTwilightEnd);
+    const civilTwilightEndRadians = (civilTwilightEndDegrees / 180) * Math.PI;
+    console.log(civilTwilightBeginDegrees, civilTwilightEndDegrees);
+    drawColorOnCanvas(civilTwilightEndRadians, civilTwilightBeginRadians, '#5B4B8A');
 
-     // offset testdawntime by 60 minutes
-     dawnOffset = new Date(sunrise.getTime() - 60 * 60000);
-     dawnOffsetAngle = timeToDegrees(dawnOffset);
-     dawnOffsetRadians = (dawnOffsetAngle / 180) * Math.PI;
+    // nautical twilight
+    let nauticalTwilightBeginDegrees = timeToDegrees(nauticalTwilightBegin);
+    const nauticalTwilightBeginRadians = (nauticalTwilightBeginDegrees / 180) * Math.PI;
 
-     duskOffset = new Date(sunset.getTime() + 60 * 60000);
-    duskOffsetAngle = timeToDegrees(duskOffset);
-    duskOffsetRadians = (duskOffsetAngle / 180) * Math.PI;
-    drawColorOnCanvas(duskOffsetRadians, dawnOffsetRadians, '#0C134F');
+    let nauticalTwilightEndDegrees = timeToDegrees(nauticalTwilightEnd);
+    const nauticalTwilightEndRadians = (nauticalTwilightEndDegrees / 180) * Math.PI;
+    drawColorOnCanvas(nauticalTwilightEndRadians, nauticalTwilightBeginRadians, '#4C3575');
+
+    // astronomical twilight
+    let astronomicalTwilightBeginDegrees = timeToDegrees(astronomicalTwilightBegin);
+    const astronomicalTwilightBeginRadians = (astronomicalTwilightBeginDegrees / 180) * Math.PI;
+
+    let astronomicalTwilightEndDegrees = timeToDegrees(astronomicalTwilightEnd);
+    const astronomicalTwilightEndRadians = (astronomicalTwilightEndDegrees / 180) * Math.PI;
+    drawColorOnCanvas(astronomicalTwilightEndRadians, astronomicalTwilightBeginRadians, '#371B58');
 }
 
 function fillDayBackGround(angleDegrees) {
@@ -267,12 +273,12 @@ function drawLineToTime(date, centerX, centerY, radius, color = 'blue') {
 
 
     // Draw the line from the center to the endpoint
-    ctx.beginPath();
-    ctx.moveTo(centerX, centerY);
-    ctx.lineTo(endX, endY);
-    ctx.strokeStyle = color; // Set the line color
-    ctx.lineWidth = 2; // Set the line width
-    ctx.stroke();
+    // ctx.beginPath();
+    // ctx.moveTo(centerX, centerY);
+    // ctx.lineTo(endX, endY);
+    // ctx.strokeStyle = color; // Set the line color
+    // ctx.lineWidth = 2; // Set the line width
+    // ctx.stroke();
 
     // draw object at intersection
     const r = 5;
