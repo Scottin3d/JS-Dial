@@ -10,6 +10,9 @@ const centerX = canvas.width / 2;
 const centerY = canvas.height / 2;
 const clockRadius = 300;
 const sunOffset = 0.8;
+const sun = {
+
+}
 
 const testDuskTime = new Date();
 testDuskTime.setHours(20, 37, 0, 0);
@@ -20,22 +23,18 @@ let sunRadius = 25; // Initial sun radius
 var sunrise;
 var sunset;
 var solarNoon;
+var dayLength;
+var civilTwilightBegin;
+var civilTwilightEnd;
+var nauticalTwilightBegin;
+var nauticalTwilightEnd;
+var astronomicalTwilightBegin;
+var astronomicalTwilightEnd;
 
 
 
 
-function timeToRadians(date) {
-    const hours = date.getHours();
-    const minutes = date.getMinutes();
-    const totalTimeInHours = hours + minutes / 60;
-    const offsetRadians = Math.PI;
-    let radians = (totalTimeInHours / 24) * (2 * Math.PI);
-    radians -= offsetRadians;
-    if (radians < 0) {
-        radians += 2 * Math.PI;
-    }
-    return radians;
-}
+
 
 function degreesToTime(degrees) {
     // Calculate time values based on the degree angle
@@ -51,18 +50,19 @@ function degreesToTime(degrees) {
     return dateObj;
 }
 
-function timeToDegrees(date) {
-    // 1 hr = 15 degrees
-    // 1 min = .25 degrees
-
+// WORKING
+function timeToDegrees(dateObj) {
+    const date = new Date(dateObj);
     const hours = date.getHours();
-    console.log(hours);
     const minutes = date.getMinutes();
-    console.log(minutes);
-    const totalTimeInHours = hours + minutes / 60;
-    const degrees = (totalTimeInHours / 24) * 360;
-    return degrees;
+    const totalTimeInMinutes = (hours * 60) + minutes;
+    const degrees = totalTimeInMinutes * 0.25;
+    return degrees + 90;
+}
 
+function timeToRadians(date) {
+    const degrees = timeToDegrees(date);
+    return (degrees / 180) * Math.PI;
 }
 
 function radiansToDate(angleInRadians) {
@@ -95,45 +95,92 @@ function radiansToDate(angleInRadians) {
 
 // Function to calculate the background color based on the current time
 function fillNightBackGround(time) {
-    
 
-    const dawnAngle = timeToRadians(sunrise);
-    const duskAngle = timeToRadians(sunset);
-    drawColorOnCanvas(duskAngle, dawnAngle, '#5C469C')
+    let dawnAngle = timeToDegrees(sunrise);
+    const dawnRadians = (dawnAngle / 180) * Math.PI;
+
+    let duskAngle = timeToDegrees(sunset);
+    const duskRadians = (duskAngle / 180) * Math.PI;
+    drawColorOnCanvas(duskRadians, dawnRadians, '#5C469C')
 
     // offset testdawntime by 30 minutes
-    const dawnOffset = new Date(sunrise.getTime() - 30 * 60000);
-    const dawnOffsetAngle = timeToRadians(dawnOffset);
-    const duskOffset = new Date(sunset.getTime() + 30 * 60000);
-    const duskOffsetAngle = timeToRadians(duskOffset);
-    drawColorOnCanvas(duskOffsetAngle, dawnOffsetAngle, '#1D267D');
+    let dawnOffset = new Date(sunrise.getTime() - 30 * 60000);
+    let dawnOffsetAngle = timeToDegrees(dawnOffset);
+    let dawnOffsetRadians = (dawnOffsetAngle / 180) * Math.PI;
+
+    let duskOffset = new Date(sunset.getTime() + 30 * 60000);
+    let duskOffsetAngle = timeToDegrees(duskOffset);
+    let duskOffsetRadians = (duskOffsetAngle / 180) * Math.PI;
+    drawColorOnCanvas(duskOffsetRadians, dawnOffsetRadians, '#1D267D');
 
      // offset testdawntime by 60 minutes
-     const dawnOffset2 = new Date(sunrise.getTime() - 60 * 60000);
-     const dawnOffsetAngle2 = timeToRadians(dawnOffset2);
-     const duskOffset2 = new Date(sunset.getTime() + 60 * 60000);
-     const duskOffsetAngle2 = timeToRadians(duskOffset2);
-     drawColorOnCanvas(duskOffsetAngle2, dawnOffsetAngle2, '#0C134F');
+     dawnOffset = new Date(sunrise.getTime() - 60 * 60000);
+     dawnOffsetAngle = timeToDegrees(dawnOffset);
+     dawnOffsetRadians = (dawnOffsetAngle / 180) * Math.PI;
+
+     duskOffset = new Date(sunset.getTime() + 60 * 60000);
+    duskOffsetAngle = timeToDegrees(duskOffset);
+    duskOffsetRadians = (duskOffsetAngle / 180) * Math.PI;
+    drawColorOnCanvas(duskOffsetRadians, dawnOffsetRadians, '#0C134F');
 }
 
 function fillDayBackGround(angleDegrees) {
     // fill sky
-    const time = degreesToTime(angleDegrees);
-
-    console.log(sunrise);
+    // offset angle by 270 % 360
+    angleDegrees = (angleDegrees + 270) % 360;
+    
     let dawnAngle = timeToDegrees(sunrise);
-    // let dawnAngle;
-    // dawnAngle -=90;
     const dawnRadians = (dawnAngle / 180) * Math.PI;
-
-    const duskAngle = timeToRadians(sunset);
+    
+    let duskAngle = timeToDegrees(sunset);
+    const duskRadians = (duskAngle / 180) * Math.PI;
+    
     const grd = ctx.createRadialGradient(centerX, centerY, 20, centerX, centerY, clockRadius);
-    grd.addColorStop(0, '#FFEEBB');
-    grd.addColorStop(1, '#9AC5F4');
-    drawColorOnCanvas(dawnRadians, duskAngle, grd)
+    
+
+    // 0.25 degrees per minute
+    // sunrise #EFD595, #EFB495, sunrise +- 30 minutes 8 degrees
+    // midday #99DBF5 after sunrise
+    // noon #9AC5F4 sunrise + day length /2 +- 1 hour 16 degrees
+    // evening #FFEEBB
+    // sunset #EBEF95, #EF9595 sunset +- 30 minutes
+    // night #4D3C77
+    // midnight #3F1D38 midnight +- 1 hour
+
+    // set color based on conditions
+    console.log(angleDegrees, dawnAngle, duskAngle);
+    let baseColor = '#99DBF5'; // midday
+    let outterColor = '#9AC5F4'; // midnight
+
+    const noonAngle = timeToDegrees(solarNoon);
+    // sunrise
+    if (angleDegrees > dawnAngle - 16 && angleDegrees < dawnAngle + 16) {
+        baseColor = '#EFD595';
+    // noon
+    }else if(angleDegrees > noonAngle - 16 && angleDegrees < noonAngle + 16){
+        baseColor = '#9AC5F4';
+    // sunset
+    }else if(angleDegrees > duskAngle - 16 && angleDegrees < duskAngle + 16){
+        baseColor = '#EBEF95';
+        outterColor = '#EF9595';
+    // evening
+    }else if(angleDegrees > duskAngle + 16 && angleDegrees < 90 - 8){
+        baseColor = '#4D3C77';
+    }
+    // midnight
+    else if(angleDegrees > 90 -8 && angleDegrees < 90 + 8){
+        baseColor = '#3F1D38';
+        outterColor = '#4D3C77';
+    }
+
+    grd.addColorStop(0, baseColor);
+
+    grd.addColorStop(1, outterColor);
+    drawColorOnCanvas(dawnRadians, duskRadians, grd)
+
 }
 
-
+// WORKING
 function drawColorOnCanvas(angleTo, angleFrom, color) {
     ctx.beginPath();
     ctx.arc(centerX, centerY, clockRadius, angleTo, angleFrom);
@@ -180,7 +227,7 @@ function drawClockTickMarks(centerX, centerY, radius, labelRadius) {
         if (!(i % 15)) {
             // Draw labels
             ctx.font = '16px Arial';
-            ctx.fillStyle = 'B9B4C7';
+            ctx.fillStyle = 'white';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(`${ ((i / 15) + 18) % 24}`, labelX2, labelY2);
@@ -212,8 +259,8 @@ function drawLineToTime(date, centerX, centerY, radius, color = 'blue') {
     const angleInRadians = timeToRadians(date);
     // Calculate the endpoint of the line
     const lineLength = Math.min(centerX, centerY) * 0.8; // Adjust the length as needed
-    const endX = centerX + Math.cos(angleInRadians) * radius * 100;
-    const endY = centerY + Math.sin(angleInRadians) * radius * 100;
+    const endX = centerX + Math.cos(angleInRadians) * radius ;
+    const endY = centerY + Math.sin(angleInRadians) * radius;
     const intersectX = centerX + Math.cos(angleInRadians) * radius * sunOffset;
     const intersectY = centerY + Math.sin(angleInRadians) * radius * sunOffset;
 
@@ -249,13 +296,22 @@ function updateSun(angleDegrees) {
 
     const time = angleDegrees;
     fillDayBackGround(time);
-    // fillNightBackGround(angleDegrees);
-    // drawLineToTime(radiansToDate(angleRadians), centerX, centerY, clockRadius, 'red');
+    fillNightBackGround(angleDegrees);
+    drawLineToTime(radiansToDate(angleRadians), centerX, centerY, clockRadius, 'grey');
     drawClock();
     drawSunCircle();
     drawClockTickMarks(centerX, centerY, clockRadius, clockRadius * .9);
-    // drawLineToTime(sunrise, centerX, centerY, clockRadius);
-    // drawLineToTime(sunset, centerX, centerY, clockRadius);
+    drawLineToTime(sunrise, centerX, centerY, clockRadius);
+    drawLineToTime(sunset, centerX, centerY, clockRadius);
+    drawLineToTime(solarNoon, centerX, centerY, clockRadius);
+    drawLineToTime(civilTwilightBegin, centerX, centerY, clockRadius);
+    drawLineToTime(civilTwilightEnd, centerX, centerY, clockRadius);
+    drawLineToTime(nauticalTwilightBegin, centerX, centerY, clockRadius);
+    drawLineToTime(nauticalTwilightEnd, centerX, centerY, clockRadius);
+    drawLineToTime(astronomicalTwilightBegin, centerX, centerY, clockRadius);
+    drawLineToTime(astronomicalTwilightEnd, centerX, centerY, clockRadius);
+    
+
 
     // // offset angle by -90 degrees
     // angleDegrees -= 90;
@@ -269,13 +325,19 @@ function updateSun(angleDegrees) {
     // ctx.fillStyle = "blue";
     // ctx.fill();
 
+    ctx.shadowBlur = 20;
+    ctx.shadowColor = 'white';
+
     ctx.beginPath();
     ctx.arc(sunX, sunY, sunRadius, 0, 2 * Math.PI);
-    ctx.fillStyle = "yellow";
+    ctx.fillStyle = "#F8FDCF";
     ctx.fill();
-    ctx.strokeStyle = "orange";
+    ctx.strokeStyle = "#E2F6CA";
     ctx.lineWidth = 1;
     ctx.stroke();
+
+    ctx.shadowBlur = 0;
+    ctx.shadowColor = 'transparent';
 
 
 }
@@ -317,10 +379,25 @@ function getSunriseSunsetData(lat, lng) {
             // Display the API response
             console.log('Success:', data);
             sunrise = new Date(data.results.sunrise);
-            console.log('Test Date: ', new Date());
-            console.log('Sunrise: ', sunrise);
+            sunrise.setMinutes(sunrise.getMinutes() + sunrise.getTimezoneOffset());
             sunset = new Date(data.results.sunset);
+            sunset.setMinutes(sunset.getMinutes() + sunset.getTimezoneOffset());
             solarNoon = new Date(data.results.solar_noon);
+            solarNoon.setMinutes(solarNoon.getMinutes() + solarNoon.getTimezoneOffset());
+            dayLength = data.results.day_length / 60; // minutes 
+            civilTwilightBegin = new Date(data.results.civil_twilight_begin);
+            civilTwilightBegin.setMinutes(civilTwilightBegin.getMinutes() + civilTwilightBegin.getTimezoneOffset());
+            civilTwilightEnd = new Date(data.results.civil_twilight_end);
+            civilTwilightEnd.setMinutes(civilTwilightEnd.getMinutes() + civilTwilightEnd.getTimezoneOffset());
+            nauticalTwilightBegin = new Date(data.results.nautical_twilight_begin);
+            nauticalTwilightBegin.setMinutes(nauticalTwilightBegin.getMinutes() + nauticalTwilightBegin.getTimezoneOffset());
+            nauticalTwilightEnd = new Date(data.results.nautical_twilight_end);
+            nauticalTwilightEnd.setMinutes(nauticalTwilightEnd.getMinutes() + nauticalTwilightEnd.getTimezoneOffset());
+            astronomicalTwilightBegin = new Date(data.results.astronomical_twilight_begin);
+            astronomicalTwilightBegin.setMinutes(astronomicalTwilightBegin.getMinutes() + astronomicalTwilightBegin.getTimezoneOffset());
+            astronomicalTwilightEnd = new Date(data.results.astronomical_twilight_end);
+            astronomicalTwilightEnd.setMinutes(astronomicalTwilightEnd.getMinutes() + astronomicalTwilightEnd.getTimezoneOffset());
+            
             updateSun(0);
             document.getElementById('apiResponse').textContent = JSON.stringify(data, null, 2);
         })
