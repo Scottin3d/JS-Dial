@@ -266,6 +266,14 @@ function drawClock() {
 function drawSunCircle(){
     ctx.beginPath();
     ctx.arc(centerX, centerY, clockRadius * SUN_OFFSET, 0, 2 * Math.PI);
+    const grd = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, clockRadius * SUN_OFFSET);
+    const baseColor = hexToRgba('#F8FDCF', 0);
+    grd.addColorStop(0.9, baseColor);
+    const outterColor = hexToRgba('#F8FDCF',1 );
+    grd.addColorStop(1, outterColor);
+    ctx.fillStyle = grd;
+    // ctx.fill();
+
     ctx.strokeStyle = "grey";
     ctx.lineWidth = 2;
     ctx.stroke();
