@@ -11,7 +11,7 @@ const circles = [];
 const centerX = canvas.width / 2;
 const centerY = canvas.height / 2;
 const clockRadius = 300;
-const SUN_OFFSET = 0.75;
+const SUN_OFFSET = 0.7;
 const sun = {
 
 }
@@ -254,9 +254,10 @@ function drawSun(angleRadians){
     const sunX = centerX + (clockRadius * SUN_OFFSET) * Math.cos(angleRadians);
     const sunY = centerY + (clockRadius * SUN_OFFSET) * Math.sin(angleRadians);
 
+    drawLineToTime(angleRadians, centerX, centerY, clockRadius, 'white');
+
     ctx.shadowBlur = 10;
     ctx.shadowColor = 'white';
-    
 
     ctx.beginPath();
     ctx.arc(sunX, sunY, sunRadius, 0, 2 * Math.PI);
@@ -268,6 +269,69 @@ function drawSun(angleRadians){
 
     ctx.shadowBlur = 0;
     ctx.shadowColor = 'transparent';
+
+}
+
+function drawClockFaceSecondTickMarks(X, Y, r, totalSeconds){
+    const totalTicks = 60; // 60 seconds in a minute
+    for (let i = 0; i < totalTicks; i++) {
+        const angle = (i / totalTicks) * (2 * Math.PI); // Calculate the angle for each tick
+        const x1 = X + r * Math.cos(angle);
+        const y1 = Y + r * Math.sin(angle);
+    
+        // Determine the color based on whether the second has passed or not
+        const isSecondPassed = i < totalSeconds;
+        const color = isSecondPassed ? 'white' : 'darkblue';
+    
+        ctx.beginPath();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 3;
+        ctx.moveTo(x1, y1);
+    
+        // Length of the tick mark
+        const tickLength = isSecondPassed ? 10 : 15;
+    
+        const x2 = X + (r - tickLength) * Math.cos(angle);
+        const y2 = Y + (r - tickLength) * Math.sin(angle);
+    
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+      }
+}
+
+function drawClockFace(angleRadians){
+    const clockX = centerX + (clockRadius * 0.5) * Math.cos(angleRadians);
+    const clockY = centerY + (clockRadius * 0.5) * Math.sin(angleRadians);
+
+    const HEX_LIGHT_BLUE = '#8db4ff';
+    const HEX_DARK_BLUE = '#35468e';
+    const grd = ctx.createLinearGradient(centerX, centerY, clockX, clockY);
+
+    drawLineToTime(angleRadians, centerX, centerY, clockRadius * .5, 'white');
+
+    grd.addColorStop(0, HEX_LIGHT_BLUE);
+    grd.addColorStop(1, HEX_DARK_BLUE);
+    ctx.beginPath();
+    ctx.arc(clockX, clockY, 100, 0, 2 * Math.PI);
+    ctx.fillStyle = grd;
+    ctx.fill();
+
+    const currentSecond = new Date().getSeconds(); 
+    drawClockFaceSecondTickMarks(clockX, clockY, clockRadius * 0.3, currentSecond);
+
+    const labelX = clockX;
+    const labelY = clockY;
+
+    // draw time label
+    ctx.font = '36px Arial';
+    ctx.fillStyle = 'white';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    const hours = radiansToDate(angleRadians).getHours().toString().padStart(2, '0');
+    const minutes = radiansToDate(angleRadians).getMinutes().toString().padStart(2, '0');
+    ctx.fillText(`${hours}:${minutes}`, labelX, labelY);
+
 }
 
 function drawMoon(angleRadians){
@@ -289,25 +353,25 @@ function drawMoon(angleRadians){
     ctx.shadowColor = 'transparent';
 }
 
-function drawLineToTime(date, centerX, centerY, radius, color = 'blue') {
+function drawLineToTime(angleInRadians, centerX, centerY, radius, color = 'blue') {
     // Calculate the angle in radians
-    const angleInRadians = timeToRadians(date);
     // Calculate the endpoint of the line
-    const lineLength = Math.min(centerX, centerY) * 0.8; // Adjust the length as needed
     const endX = centerX + Math.cos(angleInRadians) * radius ;
     const endY = centerY + Math.sin(angleInRadians) * radius;
+    // Draw the line from the center to the endpoint
+    ctx.beginPath();
+    ctx.moveTo(centerX, centerY);
+    ctx.lineTo(endX, endY);
+    ctx.strokeStyle = color; // Set the line color
+    ctx.lineWidth = 2; // Set the line width
+    ctx.stroke();
+}
+
+function drawTimeObject(date, centerX, centerY, radius, color = 'grey') {
+    // Calculate the angle in radians
+    const angleInRadians = timeToRadians(date);
     const intersectX = centerX + Math.cos(angleInRadians) * radius * SUN_OFFSET;
     const intersectY = centerY + Math.sin(angleInRadians) * radius * SUN_OFFSET;
-
-
-
-    // Draw the line from the center to the endpoint
-    // ctx.beginPath();
-    // ctx.moveTo(centerX, centerY);
-    // ctx.lineTo(endX, endY);
-    // ctx.strokeStyle = color; // Set the line color
-    // ctx.lineWidth = 2; // Set the line width
-    // ctx.stroke();
 
     // draw object at intersection
     const r = 5;
@@ -350,26 +414,26 @@ function updateSun(angleDegrees) {
     // Clear the canvas and redraw the clock
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const angleRadians = ((angleDegrees - 90) * Math.PI) / 180; // Rotate -90 degrees
-    const time = angleDegrees;
     
     testGradientOT(angleDegrees);
     // fillDayBackGround(time);
-    drawSun(angleRadians);
     fillNightBackGround(angleDegrees);
     // drawMoon(angleRadians); // only at night TODO fade
-    drawLineToTime(radiansToDate(angleRadians), centerX, centerY, clockRadius, 'grey');
+    drawTimeObject(radiansToDate(angleRadians), centerX, centerY, clockRadius, 'grey');
     drawClock();
     drawSunCircle();
+    drawSun(angleRadians);
+    drawClockFace(angleRadians + Math.PI)
     drawClockTickMarks(centerX, centerY, clockRadius, clockRadius * .9);
-    drawLineToTime(sunrise, centerX, centerY, clockRadius);
-    drawLineToTime(sunset, centerX, centerY, clockRadius);
-    drawLineToTime(solarNoon, centerX, centerY, clockRadius);
-    drawLineToTime(civilTwilightBegin, centerX, centerY, clockRadius);
-    drawLineToTime(civilTwilightEnd, centerX, centerY, clockRadius);
-    drawLineToTime(nauticalTwilightBegin, centerX, centerY, clockRadius);
-    drawLineToTime(nauticalTwilightEnd, centerX, centerY, clockRadius);
-    drawLineToTime(astronomicalTwilightBegin, centerX, centerY, clockRadius);
-    drawLineToTime(astronomicalTwilightEnd, centerX, centerY, clockRadius);
+    drawTimeObject(sunrise, centerX, centerY, clockRadius);
+    drawTimeObject(sunset, centerX, centerY, clockRadius);
+    drawTimeObject(solarNoon, centerX, centerY, clockRadius);
+    drawTimeObject(civilTwilightBegin, centerX, centerY, clockRadius);
+    drawTimeObject(civilTwilightEnd, centerX, centerY, clockRadius);
+    drawTimeObject(nauticalTwilightBegin, centerX, centerY, clockRadius);
+    drawTimeObject(nauticalTwilightEnd, centerX, centerY, clockRadius);
+    drawTimeObject(astronomicalTwilightBegin, centerX, centerY, clockRadius);
+    drawTimeObject(astronomicalTwilightEnd, centerX, centerY, clockRadius);
 }
 
 
@@ -422,4 +486,9 @@ canvas.addEventListener('mousemove', (event) => {
   });
 
 getSunriseSunsetData(51.5074, 0.1278);
-updateSun(0);
+// updateSun(0);
+
+// const interval = setInterval(()=>{
+// getSunriseSunsetData(51.5074, 0.1278);
+// updateSun(timeToDegrees(new Date()));
+// }, 1000)
