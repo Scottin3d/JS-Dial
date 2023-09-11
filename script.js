@@ -9,15 +9,10 @@ const circles = [];
 const centerX = canvas.width / 2;
 const centerY = canvas.height / 2;
 const clockRadius = 300;
-const sunOffset = 0.8;
+const SUN_OFFSET = 0.75;
 const sun = {
 
 }
-
-const testDuskTime = new Date();
-testDuskTime.setHours(20, 37, 0, 0);
-const testDawnTime = new Date();
-testDawnTime.setHours(6, 23, 0, 0);
 
 let sunRadius = 25; // Initial sun radius
 var sunrise;
@@ -32,7 +27,23 @@ var astronomicalTwilightBegin;
 var astronomicalTwilightEnd;
 
 
+function hexToRgba(hex, alpha) {
+    // Remove the hash character (#) if it exists
+    hex = hex.replace(/^#/, '');
 
+    // Parse the hex value into individual RGB components
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+
+    // Ensure the alpha value is within the range [0, 1]
+    alpha = Math.min(Math.max(0, alpha), 1);
+
+    // Create the RGBA string
+    const rgba = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+
+    return rgba;
+}
 
 
 
@@ -254,10 +265,49 @@ function drawClock() {
 
 function drawSunCircle(){
     ctx.beginPath();
-    ctx.arc(centerX, centerY, clockRadius * sunOffset, 0, 2 * Math.PI);
+    ctx.arc(centerX, centerY, clockRadius * SUN_OFFSET, 0, 2 * Math.PI);
     ctx.strokeStyle = "grey";
     ctx.lineWidth = 2;
     ctx.stroke();
+}
+
+function drawSun(angleRadians){
+    const sunX = centerX + (clockRadius * SUN_OFFSET) * Math.cos(angleRadians);
+    const sunY = centerY + (clockRadius * SUN_OFFSET) * Math.sin(angleRadians);
+
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = 'white';
+    
+
+    ctx.beginPath();
+    ctx.arc(sunX, sunY, sunRadius, 0, 2 * Math.PI);
+    ctx.fillStyle = "#F8FDCF";
+    ctx.fill();
+    ctx.strokeStyle = "#E2F6CA";
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    ctx.shadowBlur = 0;
+    ctx.shadowColor = 'transparent';
+}
+
+function drawMoon(angleRadians){
+    const sunX = centerX + (clockRadius * SUN_OFFSET) * Math.cos(angleRadians);
+    const sunY = centerY + (clockRadius * SUN_OFFSET) * Math.sin(angleRadians);
+
+    ctx.shadowBlur = 20;
+    ctx.shadowColor = 'white';
+
+    ctx.beginPath();
+    ctx.arc(sunX, sunY, sunRadius, 0, 2 * Math.PI);
+    ctx.fillStyle = "#EFE1D1";
+    ctx.fill();
+    ctx.strokeStyle = "#A78295";
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    ctx.shadowBlur = 0;
+    ctx.shadowColor = 'transparent';
 }
 
 function drawLineToTime(date, centerX, centerY, radius, color = 'blue') {
@@ -267,8 +317,8 @@ function drawLineToTime(date, centerX, centerY, radius, color = 'blue') {
     const lineLength = Math.min(centerX, centerY) * 0.8; // Adjust the length as needed
     const endX = centerX + Math.cos(angleInRadians) * radius ;
     const endY = centerY + Math.sin(angleInRadians) * radius;
-    const intersectX = centerX + Math.cos(angleInRadians) * radius * sunOffset;
-    const intersectY = centerY + Math.sin(angleInRadians) * radius * sunOffset;
+    const intersectX = centerX + Math.cos(angleInRadians) * radius * SUN_OFFSET;
+    const intersectY = centerY + Math.sin(angleInRadians) * radius * SUN_OFFSET;
 
 
 
@@ -295,14 +345,13 @@ function updateSun(angleDegrees) {
     // Clear the canvas and redraw the clock
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const angleRadians = ((angleDegrees - 90) * Math.PI) / 180; // Rotate -90 degrees
-
-    // Calculate the sun's position
-    const sunX = centerX + (clockRadius * sunOffset) * Math.cos(angleRadians);
-    const sunY = centerY + (clockRadius * sunOffset) * Math.sin(angleRadians);
-
     const time = angleDegrees;
+
+    
     fillDayBackGround(time);
+    drawSun(angleRadians);
     fillNightBackGround(angleDegrees);
+    // drawMoon(angleRadians); // only at night TODO fade
     drawLineToTime(radiansToDate(angleRadians), centerX, centerY, clockRadius, 'grey');
     drawClock();
     drawSunCircle();
@@ -316,36 +365,6 @@ function updateSun(angleDegrees) {
     drawLineToTime(nauticalTwilightEnd, centerX, centerY, clockRadius);
     drawLineToTime(astronomicalTwilightBegin, centerX, centerY, clockRadius);
     drawLineToTime(astronomicalTwilightEnd, centerX, centerY, clockRadius);
-    
-
-
-    // // offset angle by -90 degrees
-    // angleDegrees -= 90;
-    // // convert degree to radian
-    // const angleInRadians = (angleDegrees / 180) * Math.PI;
-    // // offset angle 
-
-    // ctx.beginPath();
-    // ctx.arc(centerX, centerY, clockRadius * .5, angleInRadians, 3 * Math.PI /2);
-    // ctx.lineTo(centerX, centerY);
-    // ctx.fillStyle = "blue";
-    // ctx.fill();
-
-    ctx.shadowBlur = 20;
-    ctx.shadowColor = 'white';
-
-    ctx.beginPath();
-    ctx.arc(sunX, sunY, sunRadius, 0, 2 * Math.PI);
-    ctx.fillStyle = "#F8FDCF";
-    ctx.fill();
-    ctx.strokeStyle = "#E2F6CA";
-    ctx.lineWidth = 1;
-    ctx.stroke();
-
-    ctx.shadowBlur = 0;
-    ctx.shadowColor = 'transparent';
-
-
 }
 
 
