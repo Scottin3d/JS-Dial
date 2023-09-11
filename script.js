@@ -1,3 +1,5 @@
+
+
 // Get the canvas element and its context
 const canvas = document.getElementById("clockCanvas");
 const ctx = canvas.getContext("2d");
@@ -27,23 +29,7 @@ var astronomicalTwilightBegin;
 var astronomicalTwilightEnd;
 
 
-function hexToRgba(hex, alpha) {
-    // Remove the hash character (#) if it exists
-    hex = hex.replace(/^#/, '');
 
-    // Parse the hex value into individual RGB components
-    const r = parseInt(hex.substring(0, 2), 16);
-    const g = parseInt(hex.substring(2, 4), 16);
-    const b = parseInt(hex.substring(4, 6), 16);
-
-    // Ensure the alpha value is within the range [0, 1]
-    alpha = Math.min(Math.max(0, alpha), 1);
-
-    // Create the RGBA string
-    const rgba = `rgba(${r}, ${g}, ${b}, ${alpha})`;
-
-    return rgba;
-}
 
 
 
@@ -59,21 +45,6 @@ function degreesToTime(degrees) {
     const radians = (degrees / 180) * Math.PI;
   
     return dateObj;
-}
-
-// WORKING
-function timeToDegrees(dateObj) {
-    const date = new Date(dateObj);
-    const hours = date.getHours();
-    const minutes = date.getMinutes();
-    const totalTimeInMinutes = (hours * 60) + minutes;
-    const degrees = totalTimeInMinutes * 0.25;
-    return degrees + 90;
-}
-
-function timeToRadians(date) {
-    const degrees = timeToDegrees(date);
-    return (degrees / 180) * Math.PI;
 }
 
 function radiansToDate(angleInRadians) {
@@ -348,15 +319,41 @@ function drawLineToTime(date, centerX, centerY, radius, color = 'blue') {
     circles.push({ intersectX, intersectY, r });
 }
 
+function testGradientOT(angleDegrees){
+    const COLORS = ['#EFB495', '#EBEF95', '#8db4ff', '#EBEF95', '#EFB495'];
+    const numStops = COLORS.length - 1;
+    const stopWidth = 360 / numStops;
+    const currentStop = Math.floor(angleDegrees / stopWidth);
+    const remainder = angleDegrees % stopWidth;
+    // Extract the two colors to blend
+    const color1 = COLORS[currentStop];
+    const color2 = COLORS[currentStop + 1];
+
+    const HEX_LIGHT_BLUE = '#8db4ff';
+    const HEX_DARK_BLUE = '#35468e';
+
+    // const RGBA_COLOR_BLEND = blendColors(RGBA_LIGHT_BLUE, RGBA_DARK_BLUE, angleDegrees / 360);
+    const HEX_COLOR_BLEND = blendHexColors(color1, color2, angleDegrees / 360);
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, clockRadius, 0, 2 * Math.PI);
+    const grd = ctx.createRadialGradient(centerX, centerY, 100, centerX, centerY, clockRadius);
+    grd.addColorStop(0, HEX_COLOR_BLEND);
+    grd.addColorStop(1, HEX_DARK_BLUE);
+    ctx.fillStyle = grd;
+    ctx.fill();
+
+    // orange, yellow, light blue, yellow, orange
+}
+
 // Function to draw the sun at a specific angle
 function updateSun(angleDegrees) {
     // Clear the canvas and redraw the clock
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const angleRadians = ((angleDegrees - 90) * Math.PI) / 180; // Rotate -90 degrees
     const time = angleDegrees;
-
     
-    fillDayBackGround(time);
+    testGradientOT(angleDegrees);
+    // fillDayBackGround(time);
     drawSun(angleRadians);
     fillNightBackGround(angleDegrees);
     // drawMoon(angleRadians); // only at night TODO fade
@@ -388,56 +385,10 @@ slider.addEventListener("input", () => {
     updateSun(angleDegrees);
 });
 
-function calculateDistance(x1, y1, x2, y2) {
-    const dx = x2 - x1;
-    const dy = y2 - y1;
-    return Math.sqrt(dx ** 2 + dy ** 2);
-  }
 
 
-//-4.4203400, 15.4046700
-//https://sunrise-sunset.org/api
-// Function to call the API
-function getSunriseSunsetData(lat, lng) {
-    const apiUrl = `https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lng}&formatted=0`;
-    
-    fetch(apiUrl)
-        .then((response) => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then((data) => {
-            // Display the API response
-            console.log('Success:', data);
-            sunrise = new Date(data.results.sunrise);
-            sunrise.setMinutes(sunrise.getMinutes() + sunrise.getTimezoneOffset());
-            sunset = new Date(data.results.sunset);
-            sunset.setMinutes(sunset.getMinutes() + sunset.getTimezoneOffset());
-            solarNoon = new Date(data.results.solar_noon);
-            solarNoon.setMinutes(solarNoon.getMinutes() + solarNoon.getTimezoneOffset());
-            dayLength = data.results.day_length / 60; // minutes 
-            civilTwilightBegin = new Date(data.results.civil_twilight_begin);
-            civilTwilightBegin.setMinutes(civilTwilightBegin.getMinutes() + civilTwilightBegin.getTimezoneOffset());
-            civilTwilightEnd = new Date(data.results.civil_twilight_end);
-            civilTwilightEnd.setMinutes(civilTwilightEnd.getMinutes() + civilTwilightEnd.getTimezoneOffset());
-            nauticalTwilightBegin = new Date(data.results.nautical_twilight_begin);
-            nauticalTwilightBegin.setMinutes(nauticalTwilightBegin.getMinutes() + nauticalTwilightBegin.getTimezoneOffset());
-            nauticalTwilightEnd = new Date(data.results.nautical_twilight_end);
-            nauticalTwilightEnd.setMinutes(nauticalTwilightEnd.getMinutes() + nauticalTwilightEnd.getTimezoneOffset());
-            astronomicalTwilightBegin = new Date(data.results.astronomical_twilight_begin);
-            astronomicalTwilightBegin.setMinutes(astronomicalTwilightBegin.getMinutes() + astronomicalTwilightBegin.getTimezoneOffset());
-            astronomicalTwilightEnd = new Date(data.results.astronomical_twilight_end);
-            astronomicalTwilightEnd.setMinutes(astronomicalTwilightEnd.getMinutes() + astronomicalTwilightEnd.getTimezoneOffset());
-            
-            updateSun(0);
-            document.getElementById('apiResponse').textContent = JSON.stringify(data, null, 2);
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-        });
-}
+
+
 // Function to handle button click
 function handleButtonClick() {
     // Get user input for latitude and longitude
@@ -470,15 +421,5 @@ canvas.addEventListener('mousemove', (event) => {
     hidePopup(); // Hide the popup if the mouse is not over any circle
   });
 
-// Initialize the canvas by drawing random circles
-// for (let i = 0; i < 5; i++) {
-//     drawRandomCircle();
-// }
-
-// Update background color every second
-// setInterval(calculateBackgroundColor, 1000);
-
-// Initial clock drawing
-drawClock();
-fillNightBackGround();
-
+getSunriseSunsetData(51.5074, 0.1278);
+updateSun(0);
