@@ -27,7 +27,7 @@ var nauticalTwilightBegin;
 var nauticalTwilightEnd;
 var astronomicalTwilightBegin;
 var astronomicalTwilightEnd;
-
+var timeMultiplyer = 1;
 
 
 
@@ -445,8 +445,7 @@ const slider = document.getElementById("slider");
 
 // Add an event listener to the slider input
 slider.addEventListener("input", () => {
-    const angleDegrees = parseInt(slider.value);
-    updateSun(angleDegrees);
+    timeMultiplyer = parseInt(slider.value);
 });
 
 
@@ -488,7 +487,10 @@ canvas.addEventListener('mousemove', (event) => {
 getSunriseSunsetData(51.5074, 0.1278);
 // updateSun(0);
 
-// const interval = setInterval(()=>{
+const interval = setInterval(()=>{
 // getSunriseSunsetData(51.5074, 0.1278);
-// updateSun(timeToDegrees(new Date()));
-// }, 1000)
+const time = new Date();
+time.setMinutes(time.getMinutes() + time.getTimezoneOffset());
+const degrees = timeToDegrees(time);
+updateSun((degrees * timeMultiplyer) % 360);
+}, 1000)
