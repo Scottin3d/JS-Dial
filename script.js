@@ -1,16 +1,15 @@
 
 
 // Get the canvas element and its context
-const canvas = document.getElementById("clockCanvas");
-const ctx = canvas.getContext("2d");
-const popup = document.getElementById('popup');
+const CANVAS = document.getElementById("clockCanvas");
+const CTX = CANVAS.getContext("2d");
 // Array to store circle information
 const circles = [];
 
 // Define clock parameters
-const centerX = canvas.width / 2;
-const centerY = canvas.height / 2;
-const clockRadius = 300;
+const CENTER_X = CANVAS.width / 2;
+const CENTER_Y = CANVAS.height / 2;
+const CLOCK_RADIUS = 300;
 const SUN_OFFSET = 0.7;
 const sun = {
 
@@ -28,7 +27,7 @@ var nauticalTwilightEnd;
 var astronomicalTwilightBegin;
 var astronomicalTwilightEnd;
 var timeMultiplyer = 1;
-
+var degrees = 0;
 
 
 
@@ -84,6 +83,7 @@ function fillNightBackGround(time) {
 
     let sunsetDegrees = timeToDegrees(sunset);
     const sunsetRadians = (sunsetDegrees / 180) * Math.PI;
+
     drawColorOnCanvas(sunsetRadians, sunriseRadians, '#7858A6')
 
     // civil twilight
@@ -92,7 +92,6 @@ function fillNightBackGround(time) {
 
     let civilTwilightEndDegrees = timeToDegrees(civilTwilightEnd);
     const civilTwilightEndRadians = (civilTwilightEndDegrees / 180) * Math.PI;
-    console.log(civilTwilightBeginDegrees, civilTwilightEndDegrees);
     drawColorOnCanvas(civilTwilightEndRadians, civilTwilightBeginRadians, '#5B4B8A');
 
     // nautical twilight
@@ -123,7 +122,7 @@ function fillDayBackGround(angleDegrees) {
     let duskAngle = timeToDegrees(sunset);
     const duskRadians = (duskAngle / 180) * Math.PI;
     
-    const grd = ctx.createRadialGradient(centerX, centerY, 20, centerX, centerY, clockRadius);
+    const grd = CTX.createRadialGradient(CENTER_X, CENTER_Y, 20, CENTER_X, CENTER_Y, CLOCK_RADIUS);
     
 
     // 0.25 degrees per minute
@@ -136,7 +135,6 @@ function fillDayBackGround(angleDegrees) {
     // midnight #3F1D38 midnight +- 1 hour
 
     // set color based on conditions
-    console.log(angleDegrees, dawnAngle, duskAngle);
     let baseColor = '#99DBF5'; // midday
     let outterColor = '#9AC5F4'; // midnight
 
@@ -170,26 +168,13 @@ function fillDayBackGround(angleDegrees) {
 
 // WORKING
 function drawColorOnCanvas(angleTo, angleFrom, color) {
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, clockRadius, angleTo, angleFrom);
-    ctx.lineTo(centerX, centerY);
-    ctx.fillStyle = color;
-    ctx.fill();
+    CTX.beginPath();
+    CTX.arc(CENTER_X, CENTER_Y, CLOCK_RADIUS, angleTo, angleFrom);
+    CTX.lineTo(CENTER_X, CENTER_Y);
+    CTX.fillStyle = color;
+    CTX.fill();
 }
 
-
-// Function to show the popup
-function showPopup(x, y, message) {
-    popup.style.display = 'block';
-    popup.style.left = x + 'px';
-    popup.style.top = y + 'px';
-    popup.textContent = message;
-}
-
-// Function to hide the popup
-function hidePopup() {
-    popup.style.display = 'none';
-}
 
 function drawClockTickMarks(centerX, centerY, radius, labelRadius) {
     // draw a tick mark every 6 degrees
@@ -200,25 +185,25 @@ function drawClockTickMarks(centerX, centerY, radius, labelRadius) {
         const x2 = centerX + labelRadius * Math.cos(angle);
         const y2 = centerY + labelRadius * Math.sin(angle);
 
-        ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
+        CTX.beginPath();
+        CTX.moveTo(x1, y1);
+        CTX.lineTo(x2, y2);
 
         // ctx.strokeStyle = (i % 15 === 0) ?  'black':'gray'; 
-        ctx.strokeStyle = '#B9B4C7';
-        ctx.lineWidth = (i % 15 === 0) ? 3 : 1;
-        ctx.stroke();
+        CTX.strokeStyle = '#B9B4C7';
+        CTX.lineWidth = (i % 15 === 0) ? 3 : 1;
+        CTX.stroke();
 
         const labelX2 = centerX + (labelRadius - 10) * Math.cos(angle);
         const labelY2 = centerY + (labelRadius - 10) * Math.sin(angle);
 
         if (!(i % 15)) {
             // Draw labels
-            ctx.font = '16px Arial';
-            ctx.fillStyle = 'white';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(`${ ((i / 15) + 18) % 24}`, labelX2, labelY2);
+            CTX.font = '16px Arial';
+            CTX.fillStyle = 'white';
+            CTX.textAlign = 'center';
+            CTX.textBaseline = 'middle';
+            CTX.fillText(`${ ((i / 15) + 18) % 24}`, labelX2, labelY2);
         }
     }
 }
@@ -227,48 +212,56 @@ function drawClockTickMarks(centerX, centerY, radius, labelRadius) {
 function drawClock() {
 
     // Draw the clock circle
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, clockRadius, 0, 2 * Math.PI);
-    ctx.strokeStyle = "black";
-    ctx.lineWidth = 2;
-    ctx.stroke();
+    CTX.beginPath();
+    CTX.arc(CENTER_X, CENTER_Y, CLOCK_RADIUS, 0, 2 * Math.PI);
+    CTX.strokeStyle = "black";
+    CTX.lineWidth = 2;
+    CTX.stroke();
 }
 
 function drawSunCircle(){
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, clockRadius * SUN_OFFSET, 0, 2 * Math.PI);
-    const grd = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, clockRadius * SUN_OFFSET);
+    CTX.beginPath();
+    CTX.arc(CENTER_X, CENTER_Y, CLOCK_RADIUS * SUN_OFFSET, 0, 2 * Math.PI);
+    const grd = CTX.createRadialGradient(CENTER_X, CENTER_Y, 0, CENTER_X, CENTER_Y, CLOCK_RADIUS * SUN_OFFSET);
     const baseColor = hexToRgba('#F8FDCF', 0);
     grd.addColorStop(0.9, baseColor);
     const outterColor = hexToRgba('#F8FDCF',1 );
     grd.addColorStop(1, outterColor);
-    ctx.fillStyle = grd;
+    CTX.fillStyle = grd;
     // ctx.fill();
 
-    ctx.strokeStyle = "grey";
-    ctx.lineWidth = 2;
-    ctx.stroke();
+    CTX.strokeStyle = "grey";
+    CTX.lineWidth = 2;
+    CTX.stroke();
 }
 
-function drawSun(angleRadians){
-    const sunX = centerX + (clockRadius * SUN_OFFSET) * Math.cos(angleRadians);
-    const sunY = centerY + (clockRadius * SUN_OFFSET) * Math.sin(angleRadians);
+function drawSun(angleDegrees){
+    const angleRadians = ((angleDegrees - 90) * Math.PI) / 180; // Rotate -90 degrees
+    const sunX = CENTER_X + (CLOCK_RADIUS * SUN_OFFSET) * Math.cos(angleRadians);
+    const sunY = CENTER_Y + (CLOCK_RADIUS * SUN_OFFSET) * Math.sin(angleRadians);
 
-    drawLineToTime(angleRadians, centerX, centerY, clockRadius, 'white');
+    drawLineToTime(angleRadians, CENTER_X, CENTER_Y, CLOCK_RADIUS, 'white');
 
-    ctx.shadowBlur = 10;
-    ctx.shadowColor = 'white';
+    CTX.shadowBlur = 10;
+    CTX.shadowColor = 'white';
 
-    ctx.beginPath();
-    ctx.arc(sunX, sunY, sunRadius, 0, 2 * Math.PI);
-    ctx.fillStyle = "#F8FDCF";
-    ctx.fill();
-    ctx.strokeStyle = "#E2F6CA";
-    ctx.lineWidth = 1;
-    ctx.stroke();
+    CTX.beginPath();
+    CTX.arc(sunX, sunY, sunRadius, 0, 2 * Math.PI);
+    CTX.fillStyle = "#F8FDCF";
 
-    ctx.shadowBlur = 0;
-    ctx.shadowColor = 'transparent';
+    const sunrise_begin = ((timeToDegrees(sunrise)+90) + 360) % 360;
+    const sunset_end = ((timeToDegrees(sunset)+90) + 360)% 360;
+    console.log('d',angleDegrees);
+    console.log('s',sunrise_begin, sunset_end);
+    if(angleDegrees < sunrise_begin && angleDegrees < sunset_end){
+        CTX.fill();
+    }
+    CTX.strokeStyle = "#E2F6CA";
+    CTX.lineWidth = 2;
+    CTX.stroke();
+
+    CTX.shadowBlur = 0;
+    CTX.shadowColor = 'transparent';
 
 }
 
@@ -283,10 +276,10 @@ function drawClockFaceSecondTickMarks(X, Y, r, totalSeconds){
         const isSecondPassed = i < totalSeconds;
         const color = isSecondPassed ? 'white' : 'darkblue';
     
-        ctx.beginPath();
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 3;
-        ctx.moveTo(x1, y1);
+        CTX.beginPath();
+        CTX.strokeStyle = color;
+        CTX.lineWidth = 3;
+        CTX.moveTo(x1, y1);
     
         // Length of the tick mark
         const tickLength = isSecondPassed ? 10 : 15;
@@ -294,63 +287,63 @@ function drawClockFaceSecondTickMarks(X, Y, r, totalSeconds){
         const x2 = X + (r - tickLength) * Math.cos(angle);
         const y2 = Y + (r - tickLength) * Math.sin(angle);
     
-        ctx.lineTo(x2, y2);
-        ctx.stroke();
+        CTX.lineTo(x2, y2);
+        CTX.stroke();
       }
 }
 
 function drawClockFace(angleRadians){
-    const clockX = centerX + (clockRadius * 0.5) * Math.cos(angleRadians);
-    const clockY = centerY + (clockRadius * 0.5) * Math.sin(angleRadians);
+    const clockX = CENTER_X + (CLOCK_RADIUS * 0.5) * Math.cos(angleRadians + Math.PI);
+    const clockY = CENTER_Y + (CLOCK_RADIUS * 0.5) * Math.sin(angleRadians + Math.PI);
 
     const HEX_LIGHT_BLUE = '#8db4ff';
     const HEX_DARK_BLUE = '#35468e';
-    const grd = ctx.createLinearGradient(centerX, centerY, clockX, clockY);
+    const grd = CTX.createLinearGradient(CENTER_X, CENTER_Y, clockX, clockY);
 
-    drawLineToTime(angleRadians, centerX, centerY, clockRadius * .5, 'white');
+    drawLineToTime(angleRadians, CENTER_X, CENTER_Y, CLOCK_RADIUS * .5, 'white');
 
     grd.addColorStop(0, HEX_LIGHT_BLUE);
     grd.addColorStop(1, HEX_DARK_BLUE);
-    ctx.beginPath();
-    ctx.arc(clockX, clockY, 100, 0, 2 * Math.PI);
-    ctx.fillStyle = grd;
-    ctx.fill();
+    CTX.beginPath();
+    CTX.arc(clockX, clockY, 100, 0, 2 * Math.PI);
+    CTX.fillStyle = grd;
+    CTX.fill();
 
     const currentSecond = new Date().getSeconds(); 
-    drawClockFaceSecondTickMarks(clockX, clockY, clockRadius * 0.3, currentSecond);
+    drawClockFaceSecondTickMarks(clockX, clockY, CLOCK_RADIUS * 0.3, currentSecond);
 
     const labelX = clockX;
     const labelY = clockY;
 
     // draw time label
-    ctx.font = '36px Arial';
-    ctx.fillStyle = 'white';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
+    CTX.font = '36px Arial';
+    CTX.fillStyle = 'white';
+    CTX.textAlign = 'center';
+    CTX.textBaseline = 'middle';
 
     const hours = radiansToDate(angleRadians).getHours().toString().padStart(2, '0');
     const minutes = radiansToDate(angleRadians).getMinutes().toString().padStart(2, '0');
-    ctx.fillText(`${hours}:${minutes}`, labelX, labelY);
+    CTX.fillText(`${hours}:${minutes}`, labelX, labelY);
 
 }
 
 function drawMoon(angleRadians){
-    const sunX = centerX + (clockRadius * SUN_OFFSET) * Math.cos(angleRadians);
-    const sunY = centerY + (clockRadius * SUN_OFFSET) * Math.sin(angleRadians);
+    const sunX = CENTER_X + (CLOCK_RADIUS * SUN_OFFSET) * Math.cos(angleRadians);
+    const sunY = CENTER_Y + (CLOCK_RADIUS * SUN_OFFSET) * Math.sin(angleRadians);
 
-    ctx.shadowBlur = 20;
-    ctx.shadowColor = 'white';
+    CTX.shadowBlur = 20;
+    CTX.shadowColor = 'white';
 
-    ctx.beginPath();
-    ctx.arc(sunX, sunY, sunRadius, 0, 2 * Math.PI);
-    ctx.fillStyle = "#EFE1D1";
-    ctx.fill();
-    ctx.strokeStyle = "#A78295";
-    ctx.lineWidth = 1;
-    ctx.stroke();
+    CTX.beginPath();
+    CTX.arc(sunX, sunY, sunRadius, 0, 2 * Math.PI);
+    CTX.fillStyle = "#EFE1D1";
+    CTX.fill();
+    CTX.strokeStyle = "#A78295";
+    CTX.lineWidth = 1;
+    CTX.stroke();
 
-    ctx.shadowBlur = 0;
-    ctx.shadowColor = 'transparent';
+    CTX.shadowBlur = 0;
+    CTX.shadowColor = 'transparent';
 }
 
 function drawLineToTime(angleInRadians, centerX, centerY, radius, color = 'blue') {
@@ -359,12 +352,12 @@ function drawLineToTime(angleInRadians, centerX, centerY, radius, color = 'blue'
     const endX = centerX + Math.cos(angleInRadians) * radius ;
     const endY = centerY + Math.sin(angleInRadians) * radius;
     // Draw the line from the center to the endpoint
-    ctx.beginPath();
-    ctx.moveTo(centerX, centerY);
-    ctx.lineTo(endX, endY);
-    ctx.strokeStyle = color; // Set the line color
-    ctx.lineWidth = 2; // Set the line width
-    ctx.stroke();
+    CTX.beginPath();
+    CTX.moveTo(centerX, centerY);
+    CTX.lineTo(endX, endY);
+    CTX.strokeStyle = color; // Set the line color
+    CTX.lineWidth = 2; // Set the line width
+    CTX.stroke();
 }
 
 function drawTimeObject(date, centerX, centerY, radius, color = 'grey') {
@@ -375,10 +368,10 @@ function drawTimeObject(date, centerX, centerY, radius, color = 'grey') {
 
     // draw object at intersection
     const r = 5;
-    ctx.beginPath();
-    ctx.arc(intersectX, intersectY, r, 0, 2 * Math.PI);
-    ctx.fillStyle = '#f1f1f1';
-    ctx.fill();
+    CTX.beginPath();
+    CTX.arc(intersectX, intersectY, r, 0, 2 * Math.PI);
+    CTX.fillStyle = '#f1f1f1';
+    CTX.fill();
 
     circles.push({ intersectX, intersectY, r });
 }
@@ -398,13 +391,13 @@ function testGradientOT(angleDegrees){
 
     // const RGBA_COLOR_BLEND = blendColors(RGBA_LIGHT_BLUE, RGBA_DARK_BLUE, angleDegrees / 360);
     const HEX_COLOR_BLEND = blendHexColors(color1, color2, angleDegrees / 360);
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, clockRadius, 0, 2 * Math.PI);
-    const grd = ctx.createRadialGradient(centerX, centerY, 100, centerX, centerY, clockRadius);
+    CTX.beginPath();
+    CTX.arc(CENTER_X, CENTER_Y, CLOCK_RADIUS, 0, 2 * Math.PI);
+    const grd = CTX.createRadialGradient(CENTER_X, CENTER_Y, 100, CENTER_X, CENTER_Y, CLOCK_RADIUS);
     grd.addColorStop(0, HEX_COLOR_BLEND);
     grd.addColorStop(1, HEX_DARK_BLUE);
-    ctx.fillStyle = grd;
-    ctx.fill();
+    CTX.fillStyle = grd;
+    CTX.fill();
 
     // orange, yellow, light blue, yellow, orange
 }
@@ -412,28 +405,31 @@ function testGradientOT(angleDegrees){
 // Function to draw the sun at a specific angle
 function updateSun(angleDegrees) {
     // Clear the canvas and redraw the clock
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    CTX.clearRect(0, 0, CANVAS.width, CANVAS.height);
+    CTX.fillStyle = 'black';
+    CTX.fillRect(0, 0, CANVAS.width, CANVAS.height);
     const angleRadians = ((angleDegrees - 90) * Math.PI) / 180; // Rotate -90 degrees
     
     testGradientOT(angleDegrees);
     // fillDayBackGround(time);
     fillNightBackGround(angleDegrees);
     // drawMoon(angleRadians); // only at night TODO fade
-    drawTimeObject(radiansToDate(angleRadians), centerX, centerY, clockRadius, 'grey');
+    drawTimeObject(radiansToDate(angleRadians), CENTER_X, CENTER_Y, CLOCK_RADIUS, 'grey');
     drawClock();
     drawSunCircle();
-    drawSun(angleRadians);
-    drawClockFace(angleRadians + Math.PI)
-    drawClockTickMarks(centerX, centerY, clockRadius, clockRadius * .9);
-    drawTimeObject(sunrise, centerX, centerY, clockRadius);
-    drawTimeObject(sunset, centerX, centerY, clockRadius);
-    drawTimeObject(solarNoon, centerX, centerY, clockRadius);
-    drawTimeObject(civilTwilightBegin, centerX, centerY, clockRadius);
-    drawTimeObject(civilTwilightEnd, centerX, centerY, clockRadius);
-    drawTimeObject(nauticalTwilightBegin, centerX, centerY, clockRadius);
-    drawTimeObject(nauticalTwilightEnd, centerX, centerY, clockRadius);
-    drawTimeObject(astronomicalTwilightBegin, centerX, centerY, clockRadius);
-    drawTimeObject(astronomicalTwilightEnd, centerX, centerY, clockRadius);
+
+    drawSun(angleDegrees);
+    drawTimeObject(sunrise, CENTER_X, CENTER_Y, CLOCK_RADIUS);
+    drawTimeObject(sunset, CENTER_X, CENTER_Y, CLOCK_RADIUS);
+    drawTimeObject(solarNoon, CENTER_X, CENTER_Y, CLOCK_RADIUS);
+    drawTimeObject(civilTwilightBegin, CENTER_X, CENTER_Y, CLOCK_RADIUS);
+    drawTimeObject(civilTwilightEnd, CENTER_X, CENTER_Y, CLOCK_RADIUS);
+    drawTimeObject(nauticalTwilightBegin, CENTER_X, CENTER_Y, CLOCK_RADIUS);
+    drawTimeObject(nauticalTwilightEnd, CENTER_X, CENTER_Y, CLOCK_RADIUS);
+    drawTimeObject(astronomicalTwilightBegin, CENTER_X, CENTER_Y, CLOCK_RADIUS);
+    drawTimeObject(astronomicalTwilightEnd, CENTER_X, CENTER_Y, CLOCK_RADIUS);
+    drawClockFace(angleRadians)
+    drawClockTickMarks(CENTER_X, CENTER_Y, CLOCK_RADIUS, CLOCK_RADIUS * .9);
 }
 
 
@@ -465,32 +461,15 @@ function handleButtonClick() {
 // Add a click event listener to the button
 document.getElementById('getSunriseSunsetBtn').addEventListener('click', handleButtonClick);
 
-// Event listener for mousemove
-canvas.addEventListener('mousemove', (event) => {
-    const mouseX = event.clientX - canvas.getBoundingClientRect().left;
-    const mouseY = event.clientY - canvas.getBoundingClientRect().top;
-    
-    // Check if the mouse is inside any of the circles
-    for (const circle of circles) {
-      const distance = calculateDistance(mouseX, mouseY, circle.intersectX, circle.intersectY);
-      // log ditance and radius
-
-      if (distance <= circle.radius) {
-        showPopup(event.pageX, event.pageY, 'Circle Hovered');
-        return; // Stop checking other circles
-      }
-    }
-  
-    hidePopup(); // Hide the popup if the mouse is not over any circle
-  });
 
 getSunriseSunsetData(51.5074, 0.1278);
 // updateSun(0);
 
 const interval = setInterval(()=>{
-// getSunriseSunsetData(51.5074, 0.1278);
-const time = new Date();
-time.setMinutes(time.getMinutes() + time.getTimezoneOffset());
-const degrees = timeToDegrees(time);
-updateSun((degrees * timeMultiplyer) % 360);
-}, 1000)
+    // const time = new Date();
+    // time.setMinutes(time.getMinutes() + time.getTimezoneOffset());
+    // const degrees = timeToDegrees(time);
+    degrees = (degrees + 0.25) % 360;
+    console.log(degrees);
+    updateSun(degrees);
+}, 1000 / 20)

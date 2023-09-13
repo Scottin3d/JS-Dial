@@ -13,7 +13,6 @@ function getSunriseSunsetData(lat, lng) {
         })
         .then((data) => {
             // Display the API response
-            console.log('Success:', data);
             sunrise = new Date(data.results.sunrise);
             sunrise.setMinutes(sunrise.getMinutes() + sunrise.getTimezoneOffset());
             sunset = new Date(data.results.sunset);
@@ -34,7 +33,7 @@ function getSunriseSunsetData(lat, lng) {
             astronomicalTwilightEnd = new Date(data.results.astronomical_twilight_end);
             astronomicalTwilightEnd.setMinutes(astronomicalTwilightEnd.getMinutes() + astronomicalTwilightEnd.getTimezoneOffset());
             
-            updateSun(0);
+            // output
             document.getElementById('apiResponse').textContent = JSON.stringify(data, null, 2);
         })
         .catch((error) => {
